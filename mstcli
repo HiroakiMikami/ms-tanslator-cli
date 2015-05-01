@@ -1,2 +1,2 @@
 #! /bin/sh
-node $(dirname $0)/translate.js $@
+node $(dirname $0)/translate.js $@ < /dev/stdin

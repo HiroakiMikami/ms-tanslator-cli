@@ -77,7 +77,14 @@ if (options.options["from"] != undefined) {
 }
 
 // get text to be translated
-var text = options.argv.join(" ")
+var text = ""
+if (options.argv.length == 0) {
+    // from stdin
+    text = fs.readFileSync("/dev/stdin", "utf8")
+} else {
+    // fron command line arguments
+    text = options.argv.join(" ")
+}
 
 // translate
 //// translate process

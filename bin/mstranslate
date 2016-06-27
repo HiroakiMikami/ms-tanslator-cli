@@ -1,0 +1,97 @@
+#! /bin/env node
+
+// require modules
+const fs = require('fs');
+const GetOpt = require('node-getopt');
+const Promise = require('bluebird');
+const translate = require('../lib/main.js').translate
+
+// constant
+const helpMessage =
+    "Usage: mstcli [OPTION] <words to be translated>\n" +
+    "\n" +
+    "[[OPTIONS]]\n"
+const defaultConfigurationFile = process.env.HOME + "/.mstclirc"
+
+
+new Promise((resolve, reject) => {
+  // parse command line options
+  const parser = new GetOpt(
+    [
+      ['c', 'config=FILE', 'config file to read'],
+      ['f', 'from=LANG', 'input language'],
+      ['t', 'to=LANG', 'output language'],
+      ['h', 'help', 'display this help'],
+  ]).bindHelp();
+  parser.setHelp(helpMessage);
+  const options = parser.parse(process.argv.slice(2));
+
+  // Decide the path of configuration file
+  const configurationFileName =
+    (options.options["config"] != undefined) ?
+      configurationFileName = options.options["config"] :
+      defaultConfigurationFile
+
+  // Read the configuration file
+  fs.readFile(configurationFileName, 'utf8', (err, data) => {
+    if (err) {
+      reject(err)
+    } else {
+      resolve({
+        options: options,
+        configs: data
+      })
+    }
+  })
+}).then((data) => {
+  const text = data.configs
+  const options = data.options
+  return new Promise((resolve, reject) => {
+    // read config file
+    var configs = {}
+    for (line of text.split("\n")) {
+      // delete space character and parse
+      const kv = line.replace(/\s+/g, "").split(":")
+      if (kv.length == 2) {
+        if (kv[0] == "from") {
+          configs.fromLanguage = kv[1];
+        } else if (kv[0] == "to") {
+          configs.toLanguage = kv[1];
+        } else if (kv[0] == "client_id") {
+          configs.client_id = kv[1];
+        } else if (kv[0] == "client_secret") {
+          configs.client_secret = kv[1];
+        } else {
+          reject("invalid key name: " + kv[0])
+          return ;
+        }
+      }
+    }
+
+    // Read the command line options
+    if (options.options["to"] != undefined) {
+      configs.toLanguage = options.options["to"]
+    }
+    if (options.options["from"] != undefined) {
+      configs.fromLanguage = options.options["from"]
+    }
+
+    // get text to be translated
+    configs['text'] = ""
+    if (options.argv.length == 0) {
+      // from stdin (TODO)
+      configs['text'] = fs.readFileSync("/dev/stdin", "utf8")
+    } else {
+      // fron command line arguments
+      configs['text'] = options.argv.join(" ")
+    }
+
+    resolve(configs)
+  })
+}).then((configs) => {
+  return translate(
+    configs.client_id, configs.client_secret, configs.text, configs.toLanguage, configs.fromLanguage
+  )
+}).then((text) => {
+  console.log(text)
+})

@@ -1,0 +1,32 @@
+{
+  "name": "ms-translator-cli",
+  "version": "0.0.0",
+  "description": "The command line tool of Microsoft translator",
+  "main": "lib/main.js",
+  "bin": {
+    "mstranslate": "bin/mstranslate"
+  },
+  "scripts": {
+    "test": "mocha -R spec"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HiroakiMikami/ms-translator-cli.git"
+  },
+  "keywords": [
+    "diff",
+    "cli"
+  ],
+  "author": "Hiroaki Mikami",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/HiroakiMikami/ms-translator-cli/issues"
+  },
+  "homepage": "https://github.com/HiroakiMikami/ms-translator-cli#readme",
+  "dependencies": {
+    "node-getopt": "*",
+    "querystring": "*",
+    "xmljson": "*",
+    "bluebird": ">=3.3.1 < 4.0.0"
+  }
+}
